@@ -1,7 +1,7 @@
 /*
-RP2040 BARE METAL ASSEMBLY LED BLINKING PROGRAM
+RP2040 BARE METAL ASSEMBLY ALTERNATE LED BLINKING PROGRAM
 
-Followed this video: https://youtu.be/G64GegkxW84?si=fdnJUtce7ZCkpjFg
+Alternates between blinking the onboard LED at GPIO 25 and the offboard LED at GPIO 0
 */
 
 // Program entry point
@@ -21,7 +21,7 @@ rst:
 	and r1, r1, r2				// compare bit 5 of register 1 and 2 and store result in 1
 	beq rst						// if bit 5 is 0 then loop, else continue
 // Set SIO control over GPIO 25 (LED)
-	ldr r0, =ctrl				// move variable value into register 0 for GPIO 25 controller
+	ldr r0, =ctrl_25			// move variable value into register 0 for GPIO 25 controller
 	mov r1, #5					// select function 5 to use SIO for GPIO 25
 	str r1, [r0]				// creates GPIO 25 control register
 // Set bitmask to enable GPIO 25 (LED)
@@ -29,6 +29,14 @@ rst:
 	lsl r1, r1, #25				// shift left 25 bits to align with GPIO 25
 	ldr r0, =sio_base			// use register 0 for SIO base
 	str r1, [r0, #36]			// GPIO output enable
+// Set SIO control over GPIO 0	(EXTERN)
+	ldr r2, =ctrl_0				// move variable value into register 0 for GPIO 0 controller
+	mov r1, #5					// select function 5 to use SIO for GPIO 0
+	str r1, [r2]				// creates GPIO 0 control register
+// Set bitmask to enable GPIO 0 (EXTERN)
+	mov r1, #1					// setup bitmask by loading 1 into register 1
+	ldr r2, =sio_base			// use register 0 for SIO base
+	str r1, [r2, #36]			// GPIO output enable
 
 // Loop to blink LED
 led_loop:
@@ -37,6 +45,14 @@ led_loop:
 	bl delay					// branch to delay subroutine
 // Runs after delay subroutine hits 0
 	str r1, [r0, #24]			// clear GPIO output value to turn off LED
+	ldr r3, =big_num			// reset count
+	bl delay					// branch to delay subroutine
+// Turn on external LED
+	str r1, [r2, #20]			// set GPIO output value to turn on external LED
+	ldr r3, =big_num			// load countdown number for delay
+	bl delay					// branch to delay subroutine
+// Turn off external LED
+	str r1, [r2, #24]			// clear GPIO output value to turn off LED
 	ldr r3, =big_num			// reset count
 	bl delay					// branch to delay subroutine
 // Runs after delay subroutine hits 0
@@ -53,6 +69,7 @@ data:
 	// Variable declarations
 	.equ rst_clr, 	0x4000f000	// atomic register to clear reset controller
 	.equ rst_base, 	0x4000c000	// reset controller base
-	.equ ctrl, 		0x400140cc	// GPIO25 controller
+	.equ ctrl_25,	0x400140cc	// GPIO25 controller
+	.equ ctrl_0,	0x40014004	// GPIO0 controller
 	.equ sio_base, 	0xd0000000	// SIO base
-	.equ big_num,	0x00f00000	// big number for delay
+	.equ big_num,	0x00780000	// big number for delay
