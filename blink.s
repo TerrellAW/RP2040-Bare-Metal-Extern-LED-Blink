@@ -30,13 +30,13 @@ rst:
 	ldr r0, =sio_base			// use register 0 for SIO base
 	str r1, [r0, #36]			// GPIO output enable
 // Set SIO control over GPIO 0	(EXTERN)
-	ldr r2, =ctrl_0				// move variable value into register 0 for GPIO 0 controller
-	mov r1, #5					// select function 5 to use SIO for GPIO 0
-	str r1, [r2]				// creates GPIO 0 control register
+	ldr r0, =ctrl_0				// move variable value into register 0 for GPIO 0 controller
+	mov r2, #5					// select function 5 to use SIO for GPIO 0
+	str r2, [r0]				// creates GPIO 0 control register
 // Set bitmask to enable GPIO 0 (EXTERN)
-	mov r1, #1					// setup bitmask by loading 1 into register 1
-	ldr r2, =sio_base			// use register 0 for SIO base
-	str r1, [r2, #36]			// GPIO output enable
+	mov r2, #1					// setup bitmask by loading 1 into register 1
+	ldr r0, =sio_base			// use register 0 for SIO base
+	str r2, [r0, #36]			// GPIO output enable
 
 // Loop to blink LED
 led_loop:
@@ -48,11 +48,11 @@ led_loop:
 	ldr r3, =big_num			// reset count
 	bl delay					// branch to delay subroutine
 // Turn on external LED
-	str r1, [r2, #20]			// set GPIO output value to turn on external LED
+	str r2, [r0, #20]			// set GPIO output value to turn on external LED
 	ldr r3, =big_num			// load countdown number for delay
 	bl delay					// branch to delay subroutine
 // Turn off external LED
-	str r1, [r2, #24]			// clear GPIO output value to turn off LED
+	str r2, [r0, #24]			// clear GPIO output value to turn off LED
 	ldr r3, =big_num			// reset count
 	bl delay					// branch to delay subroutine
 // Runs after delay subroutine hits 0
